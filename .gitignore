@@ -41,6 +41,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local MT5 CSV exports used for MAE/MFE import testing
+/data/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

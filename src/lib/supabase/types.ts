@@ -1,5 +1,7 @@
 export type TradeSide = "buy" | "sell";
 export type TradeResult = "win" | "lose";
+export type PairCategory = "dollar_straight" | "cross_yen";
+export type DstMode = "summer" | "winter";
 
 export type Trade = {
   id: string;
@@ -23,7 +25,25 @@ export type Trade = {
   result: TradeResult | null;
   memo: string | null;
   screenshot_url: string | null;
+  usdjpy_base_rate: number | null;
   created_at: string;
+};
+
+export type CurrencyPair = {
+  id: string;
+  user_id: string;
+  symbol: string;
+  category: PairCategory;
+  created_at: string;
+};
+
+export type UserSettings = {
+  user_id: string;
+  dst_mode: DstMode;
+  mt5_offset_summer_hours: number;
+  mt5_offset_winter_hours: number;
+  alpha_vantage_api_key: string | null;
+  updated_at: string;
 };
 
 export type Tag = {
@@ -66,6 +86,22 @@ export interface Database {
         Row: TradeTag;
         Insert: TradeTag;
         Update: Partial<TradeTag>;
+        Relationships: [];
+      };
+      currency_pairs: {
+        Row: CurrencyPair;
+        Insert: Omit<CurrencyPair, "id" | "user_id" | "created_at"> & {
+          id?: string;
+          user_id?: string;
+          created_at?: string;
+        };
+        Update: Partial<Omit<CurrencyPair, "id" | "user_id" | "created_at">>;
+        Relationships: [];
+      };
+      user_settings: {
+        Row: UserSettings;
+        Insert: Partial<Omit<UserSettings, "user_id">> & { user_id: string };
+        Update: Partial<Omit<UserSettings, "user_id">>;
         Relationships: [];
       };
     };

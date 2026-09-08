@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { deleteTrade } from "@/app/(app)/trades/actions";
+import DeleteTradeButton from "@/components/delete-trade-button";
 
 export default async function TradesPage() {
   const supabase = await createClient();
@@ -12,12 +14,20 @@ export default async function TradesPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-semibold">トレード記録</h1>
-        <Link
-          href="/trades/new"
-          className="rounded bg-black px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-black"
-        >
-          + 新規記録
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/trades/import"
+            className="rounded border border-black/20 px-4 py-2 text-sm font-medium dark:border-white/20"
+          >
+            MAE/MFE一括インポート
+          </Link>
+          <Link
+            href="/trades/new"
+            className="rounded bg-black px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-black"
+          >
+            + 新規記録
+          </Link>
+        </div>
       </div>
 
       {error && <p className="text-sm text-red-600">読み込みエラー: {error.message}</p>}
@@ -42,6 +52,7 @@ export default async function TradesPage() {
                 <th className="py-2 pr-4">MAE</th>
                 <th className="py-2 pr-4">MFE</th>
                 <th className="py-2 pr-4">結果</th>
+                <th className="py-2 pr-4"></th>
               </tr>
             </thead>
             <tbody>
@@ -67,6 +78,9 @@ export default async function TradesPage() {
                         {trade.result.toUpperCase()}
                       </span>
                     )}
+                  </td>
+                  <td className="py-2 pr-4 text-right">
+                    <DeleteTradeButton id={trade.id} action={deleteTrade} />
                   </td>
                 </tr>
               ))}

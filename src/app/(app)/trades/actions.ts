@@ -32,8 +32,15 @@ export async function createTrade(formData: FormData) {
   const tpTarget = numberOrNull(formData.get("tp_target"));
   const openedAt = String(formData.get("opened_at"));
   const closedAt = stringOrNull(formData.get("closed_at"));
+  const usdJpyBaseRate = numberOrNull(formData.get("usdjpy_base_rate"));
 
-  const pnlPips = calcPnlPips(pair, side, entryPrice, exitPrice);
+  const { data: registeredPair } = await supabase
+    .from("currency_pairs")
+    .select("category")
+    .eq("symbol", pair)
+    .maybeSingle();
+
+  const pnlPips = calcPnlPips(pair, side, entryPrice, exitPrice, registeredPair?.category);
   const riskReward = calcRiskReward(entryPrice, lcTarget, tpTarget);
 
   let result = stringOrNull(formData.get("result")) as TradeResult | null;
@@ -62,6 +69,7 @@ export async function createTrade(formData: FormData) {
     result,
     memo: stringOrNull(formData.get("memo")),
     screenshot_url: stringOrNull(formData.get("screenshot_url")),
+    usdjpy_base_rate: usdJpyBaseRate,
   });
 
   if (error) {
@@ -70,4 +78,18 @@ export async function createTrade(formData: FormData) {
 
   revalidatePath("/trades");
   redirect("/trades");
+}
+
+export async function deleteTrade(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const id = String(formData.get("id"));
+  const { error } = await supabase.from("trades").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/trades");
 }

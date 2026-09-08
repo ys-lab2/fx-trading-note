@@ -7,6 +7,8 @@ const NAV_ITEMS = [
   { href: "/trades", label: "トレード記録" },
   { href: "/dashboard", label: "ダッシュボード" },
   { href: "/calendar", label: "カレンダー" },
+  { href: "/pairs", label: "通貨ペア" },
+  { href: "/settings", label: "設定" },
 ];
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {

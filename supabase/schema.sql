@@ -23,8 +23,62 @@ create table if not exists trades (
   result text check (result in ('win', 'lose')),
   memo text,
   screenshot_url text,
+  usdjpy_base_rate numeric,
   created_at timestamptz not null default now()
 );
+
+alter table trades add column if not exists usdjpy_base_rate numeric;
+
+-- v2: registered currency pairs, per user. `category` drives pip size and
+-- pnl-amount conversion (dollar_straight needs a USDJPY base rate to convert
+-- USD pip value to JPY; cross_yen pip value is already in JPY).
+create table if not exists currency_pairs (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  symbol text not null,
+  category text not null check (category in ('dollar_straight', 'cross_yen')),
+  created_at timestamptz not null default now(),
+  unique (user_id, symbol)
+);
+
+create index if not exists currency_pairs_user_id_idx on currency_pairs (user_id);
+
+alter table currency_pairs enable row level security;
+
+create policy "currency_pairs_owner_select" on currency_pairs for select using (auth.uid() = user_id);
+create policy "currency_pairs_owner_insert" on currency_pairs for insert with check (auth.uid() = user_id);
+create policy "currency_pairs_owner_delete" on currency_pairs for delete using (auth.uid() = user_id);
+
+-- v2: one settings row per user. Holds the JST <-> MT5 server-time offset
+-- used to align MT5 CSV candle timestamps with trade times when importing
+-- MAE/MFE; the offset shifts between summer_hours and winter_hours as the
+-- broker's server observes DST.
+create table if not exists user_settings (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  dst_mode text not null default 'summer' check (dst_mode in ('summer', 'winter')),
+  mt5_offset_summer_hours numeric not null default 6,
+  mt5_offset_winter_hours numeric not null default 7,
+  alpha_vantage_api_key text,
+  updated_at timestamptz not null default now()
+);
+
+alter table user_settings add column if not exists alpha_vantage_api_key text;
+
+alter table user_settings enable row level security;
+
+create policy "user_settings_owner_select" on user_settings for select using (auth.uid() = user_id);
+create policy "user_settings_owner_insert" on user_settings for insert with check (auth.uid() = user_id);
+create policy "user_settings_owner_update" on user_settings for update using (auth.uid() = user_id);
+
+-- RLS policies alone don't grant API access: PostgREST still checks the
+-- table-level privileges of the `authenticated` role first. Without these
+-- grants, every request fails with "permission denied for table ..." before
+-- RLS is even evaluated.
+grant select, insert, update, delete on public.trades to authenticated;
+grant select, insert, update, delete on public.tags to authenticated;
+grant select, insert, update, delete on public.trade_tags to authenticated;
+grant select, insert, update, delete on public.currency_pairs to authenticated;
+grant select, insert, update, delete on public.user_settings to authenticated;
 
 create table if not exists tags (
   id uuid primary key default gen_random_uuid(),
