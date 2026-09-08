@@ -2,7 +2,8 @@ import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // LAN上のスマホ実機からdevサーバーへアクセスして動作確認するために許可
+  allowedDevOrigins: ["192.168.2.40"],
 };
 
 const withSerwist = withSerwistInit({

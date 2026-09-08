@@ -24,7 +24,7 @@ npm install
 1. https://supabase.com でプロジェクトを新規作成
 2. SQL Editorで [supabase/schema.sql](supabase/schema.sql) を実行し、テーブル・RLSポリシー・ストレージバケットを作成
 3. Authentication > Users から自分用のユーザーを1人作成（本アプリはサインアップ画面を持たない、単一ユーザー想定のため）
-4. Project Settings > API から `Project URL` と `anon public key` を控える
+4. Project Settings > API から `Project URL` と `Publishable key`（`sb_publishable_...`）を控える
 
 ### 3. 環境変数を設定
 
