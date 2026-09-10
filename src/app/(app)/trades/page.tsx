@@ -58,7 +58,9 @@ export default async function TradesPage() {
             <tbody>
               {trades.map((trade) => (
                 <tr key={trade.id} className="border-b border-black/5 dark:border-white/5">
-                  <td className="py-2 pr-4">{new Date(trade.opened_at).toLocaleString("ja-JP")}</td>
+                  <td className="py-2 pr-4">
+                    {new Date(trade.opened_at).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}
+                  </td>
                   <td className="py-2 pr-4">{trade.pair}</td>
                   <td className="py-2 pr-4">{trade.side === "buy" ? "買い" : "売り"}</td>
                   <td className="py-2 pr-4">{trade.lot_size}</td>
